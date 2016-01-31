@@ -1,0 +1,80 @@
+<section>
+      VmInclude:__BASE__/vmiis/Common-Code/toolbar/week.html
+      VmInclude:__BASE__/vmiis/Common-Code/calendar/week.html
+</section>
+<script>
+    function F__ID(){
+        //--------------------------------------------------------
+        VmInclude:__BASE__/vmiis/Common-Code/toolbar/week.js
+        VmInclude:__BASE__/vmiis/Common-Code/calendar/week.js
+        VmInclude:__BASE__/vmiis/Common-Code/style/ease-in-out.js
+        //--------------------------------------------------------
+        var m_object=$vm.vm['__ID'];
+        var m_name=m_object.name;
+        //-------------------------------------
+        var record_name=$vm.module_list[m_name][3];
+        var record_db_pid=$vm.module_list[record_name][0];
+        //--------------------------------------------------------
+        var display=function(){
+            var first_day=$('#D__ID').data('first_day'), last_day=$('#D__ID').data('last_day');
+            var sql="select ID,Author,Information from [FORM-"+record_db_pid+"] where @T1<=DT1 and DT1<=@T2 order by DT1";
+            var req_data={cmd:'query_records',sql:sql,t1:first_day,t2:last_day};
+            $VmAPI.request({data:req_data,callback:function(res){
+                calendar_week(function(d){
+                    var daily_name=$vm.module_list[m_name][4];
+                    var mid=$vm.module_list[daily_name][0];
+                    var url=$vm.module_list[daily_name][1];
+                    var src=$vm.module_list[daily_name][2];
+                    var param={
+                        name:daily_name,
+                        pid:$vm.id(url+mid),
+                        url:$vm.url(url),
+                        slot:$vm.root_layout_content_slot,
+                        source:src,
+                        op:{day:d}
+                    }
+                    $vm.load_module(param);
+                });
+        		for(var i=0;i<res.records.length;i++){
+    				var id=res.records[i].ID;
+    				var d=res.records[i].Date;
+    				$ul=calendar_ul(d);
+    				if($ul!==undefined)	set_div($ul,res,i);
+    			}
+                var top1=$('#calendar__ID').offset().top;
+                $('#calendar__ID').css("height",$(window).height()-top1-$('#'+$vm.root_layout_footer).outerHeight());
+            }});
+        }
+        //--------------------------------------------------------
+        var set_div=function($ul,res,i){
+            var rid=res.records[i].ID;
+    		var time=res.records[i].Time;
+    		var description=res.records[i].Description;
+    		var color=res.records[i].Color;
+    		var LI="<li><u id=event"+rid+" style=cursor:pointer;color:"+color+">"+time+" - "+description+"</u></li>";
+    		$ul.append(LI);
+            $('#event'+rid).data("rid",rid);
+        	$('#event'+rid).on('click',function(){
+                var id=$(this).data('rid');
+                $vm.g_update_key='__ID';
+                var mid=$vm.module_list[record_name][0];
+                var url=$vm.module_list[record_name][1];
+                var src=$vm.module_list[record_name][2];
+                var param={
+                    name:record_name,
+                    pid:$vm.id(url+mid),
+                    slot:$vm.root_layout_content_slot,
+                    url:$vm.url(url),
+                    source:src,
+                    op:{sql_where:'where id='+rid,single:true}
+                }
+                $vm.load_module(param);
+        	});
+    	};
+    	//--------------------------------------------------------
+        $('#D__ID').on('back',display);
+        $('#D__ID').on('display',display);
+        $('#D__ID').on('load',display);
+        //--------------------------------------------------------
+    }
+</script>

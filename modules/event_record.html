@@ -1,0 +1,62 @@
+<section>
+      VmInclude:__BASE__/vmiis/Common-Code/frame/excel.html
+</section>
+<script>
+    function F__ID(){
+        //-------------------------------------
+        var fields="Date,Time,Description,Details,Color,Status";
+        fields+=",Submit Date|DateTime,Submitted by|Author";
+        //-------------------------------------
+        VmInclude:__BASE__/vmiis/Common-Code/frame/excel.js
+        VmInclude:__BASE__/vmiis/Common-Code/style/ease-in-out.js
+        //-------------------------------------
+        var m_object=$vm.vm['__ID'];
+        var m_name=m_object.name;
+        //-------------------------------------
+        columns[0]={data:'Date',width:120,type: 'date',format: 'DD/MM/YYYY',correctFormat:true};
+        columns[1]={data:'Time',width:110, renderer:function(instance, td, row, col, prop, value, cellProperties){
+    		if(value===undefined || value===null) value="08:00";
+    	    $(td).html("<input type=time value='"+value+"' style='border: 0px solid;' />");
+    	    $(td).find('input').on('change',function(){ $("#excel__ID").handsontable("setDataAtCell", row, col, this.value); });
+            return td;
+        }};
+        columns[4]={data:'Color',width:60, renderer:function(instance, td, row, col, prop, value, cellProperties){
+    		if(value===undefined || value===null){ value="#008800"; $("#excel__ID").handsontable("setDataAtCell", row, col, value); }
+    	    $(td).html("<input type=color value='"+value+"' style='border: 0px solid; background-color:#fff' />");
+    	    $(td).find('input').on('change',function(){ $("#excel__ID").handsontable("setDataAtCell", row, col, this.value); });
+            return td;
+        }};
+        //-------------------------------------
+        var before_submit=function(record,dbv){
+            dbv.DT1=record.Date;
+            dbv.S1=record.Time;
+            return true;
+        };
+        //-------------------------------------
+        var sql_where="";
+        $('#D__ID').on('load',function(){
+            sql_where=m_object.op.sql_where;
+            $('#multi__ID').show();
+            if(m_object.op.single===true) $('#multi__ID').hide();
+            grid_data();
+        })
+        //-------------------------------------
+        var grid_process=function(res){
+            if(m_object.op.new!==undefined){
+                m_object.op.new=undefined;
+                $('#new__ID').triggerHandler('click');
+                $("#excel__ID").handsontable("setDataAtCell", 0, 0, m_object.op.date);
+                $("#excel__ID").handsontable("setDataAtCell", 0, 1, m_object.op.time);
+                $("#excel__ID").handsontable("render");
+            }
+        };
+        //-------------------------------------
+    }
+</script>
+<style>
+    VmInclude:__BASE__/vmiis/Common-Code/toolbar/toolbar_for_excel.css
+    #D__ID{
+        font-size:14px;
+        font-family: Helvetica, Arial, sans-serif;
+    }
+</style>
